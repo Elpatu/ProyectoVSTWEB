@@ -1,0 +1,343 @@
+/* Estilos generales de la página */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: #fff;
+    background-image: url('img/SweetDrive.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+
+
+h1, h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Controles generales */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+/* Botones */
+button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #222;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+/* Estilos para los knobs circulares */
+.center {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slider {
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    user-select: none;
+}
+
+.knob {
+    width: 220px;
+    height: 220px;
+    background: rgb(222, 222, 222);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.knob .rotator {
+    width: 180px;
+    height: 180px;
+    background: rgb(235, 235, 235);
+    border-radius: 50%;
+    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2), inset 1px 2px 1px white,
+        2px -1px 1px rgba(0, 0, 0, 0.2), -1px 0px 1px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.knob .text {
+    width: 40px;
+    height: 40px;
+    margin: 0 15px;
+    font-family: poppins;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgb(57, 55, 53);
+    border: 0.3mm solid rgba(57, 55, 53);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pointer {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: calc(50% - 10px);
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    transform-origin: 110px 10px;
+    transform: rotate(-45deg);
+}
+
+.pointer span {
+    font-size: 60px;
+    transform: rotate(180deg) translateX(15px);
+}
+
+circle {
+    fill: none;
+}
+
+circle:nth-child(1) {
+    stroke: rgba(0, 0, 0, 0.7);
+    stroke-width: 15px;
+    stroke-dasharray: 660;
+    transform-origin: center;
+    transform: rotate(135deg);
+    stroke-linecap: round;
+}
+
+circle:nth-child(2) {
+    stroke: rgb(2, 117, 232);
+    stroke-width: 15px;
+    stroke-dasharray: 880;
+    stroke-dashoffset: calc(880 - (660 * 0) / 100);
+    transform-origin: center;
+    transform: rotate(135deg);
+    stroke-linecap: round;
+}
+
+/* Estilos adicionales para la disposición de los knobs */
+.knobs-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin: 30px 0;
+}
+
+.knob-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.knob-name {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    margin-top: 15px;
+    color: #fff;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Ajustes para el tema oscuro */
+.knob .rotator {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.knob .text {
+    color: #333;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Efecto hover para los knobs */
+.knob-wrapper:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+}
+
+/* Estilos para la sección de grabación de audio */
+.audio-section {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 30px auto;
+    max-width: 800px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.audio-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.audio-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.record-btn, .stop-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.record-btn {
+    background: #e74c3c;
+    color: white;
+}
+
+.record-btn:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+
+.stop-btn {
+    background: #34495e;
+    color: white;
+}
+
+.stop-btn:hover {
+    background: #2c3e50;
+}
+
+.recording-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.recording-status.recording {
+    color: #e74c3c;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.audio-visualizer {
+    width: 100%;
+    height: 100px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+#visualizer {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Estilos para el knob con topes */
+.knob-with-stops {
+    position: relative;
+}
+
+.knob-stop-markers {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.knob-stop {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.knob-stop.active {
+    background: #e74c3c;
+    box-shadow: 0 0 5px #e74c3c;
+}
+
+/* Ajustes para el knob con topes */
+.knob-wrapper.stop-knob .knob .text {
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border-color: #fff;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .knobs-container {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .knobs-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .knob-wrapper {
+        width: 90%;
+        max-width: 350px;
+    }
+}
