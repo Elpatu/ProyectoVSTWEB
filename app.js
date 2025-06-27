@@ -1,24 +1,32 @@
-// Variables globales
+/* ========== VARIABLES GLOBALES ========== */
 let audioContext;
 let inputGainNode, distortionNode, toneFilter, outputGainNode, destinationNode;
 let analyser, canvasCtx, animationId;
 let mediaStream, mediaRecorder, audioChunks = [];
 let isRecording = false;
 let currentDistortionType = 0;
+let savedConfigurations = JSON.parse(localStorage.getItem('audioDistortionConfigs')) || [];
+let currentConfig = {
+  gain: 50,
+  drive: 50,
+  tone: 50,
+  output: 50,
+  distortionType: 0
+};
 
-// Elementos del DOM
+/* ========== ELEMENTOS DEL DOM ========== */
 const recordBtn = document.getElementById('recordBtn');
 const stopBtn = document.getElementById('stopBtn');
 const recordingStatus = document.getElementById('recordingStatus');
 const audioPlayback = document.getElementById('audioPlayback');
 const visualizer = document.getElementById('visualizer');
 
-// Inicializar el contexto de audio
+/* ========== FUNCIONES DE AUDIO ========== */
 async function initAudioContext() {
   try {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     
-    // Crear nodos de audio
+    // Crear y configurar nodos de audio
     inputGainNode = audioContext.createGain();
     distortionNode = audioContext.createWaveShaper();
     toneFilter = audioContext.createBiquadFilter();
@@ -26,7 +34,7 @@ async function initAudioContext() {
     analyser = audioContext.createAnalyser();
     destinationNode = audioContext.destination;
     
-    // Configurar valores iniciales
+    // Valores iniciales
     inputGainNode.gain.value = 1;
     distortionNode.oversample = '4x';
     toneFilter.type = "lowpass";
@@ -34,17 +42,14 @@ async function initAudioContext() {
     outputGainNode.gain.value = 0.5;
     analyser.fftSize = 256;
     
-    // Conectar nodos
+    // Conexión de nodos
     inputGainNode.connect(distortionNode);
     distortionNode.connect(toneFilter);
     toneFilter.connect(outputGainNode);
     outputGainNode.connect(analyser);
     outputGainNode.connect(destinationNode);
     
-    // Configurar distorsión inicial
     updateDistortion();
-    
-    console.log("AudioContext inicializado correctamente");
     return true;
   } catch (error) {
     console.error("Error al inicializar AudioContext:", error);
@@ -52,23 +57,15 @@ async function initAudioContext() {
   }
 }
 
-// Funciones de distorsión
 function updateDistortion() {
-  const driveValue = document.querySelector('#slider2 .text').textContent / 100 * 10;
+  const driveValue = parseInt(document.querySelector('#slider2 .text').textContent) || 50;
+  const normalizedDrive = 1 + (driveValue / 100 * 9);
   
   switch(currentDistortionType) {
-    case 0: // Soft clipping
-      distortionNode.curve = makeDistortionCurve(driveValue, 'soft');
-      break;
-    case 1: // Hard clipping
-      distortionNode.curve = makeDistortionCurve(driveValue, 'hard');
-      break;
-    case 2: // Fuzz
-      distortionNode.curve = makeDistortionCurve(driveValue, 'fuzz');
-      break;
-    case 3: // Overdrive
-      distortionNode.curve = makeDistortionCurve(driveValue, 'overdrive');
-      break;
+    case 0: distortionNode.curve = makeDistortionCurve(normalizedDrive * 20, 'soft'); break;
+    case 1: distortionNode.curve = makeDistortionCurve(normalizedDrive * 40, 'hard'); break;
+    case 2: distortionNode.curve = makeDistortionCurve(normalizedDrive * 60, 'fuzz'); break;
+    case 3: distortionNode.curve = makeDistortionCurve(normalizedDrive * 30, 'overdrive'); break;
   }
 }
 
@@ -81,20 +78,14 @@ function makeDistortionCurve(amount, type) {
     let y;
     
     switch(type) {
-      case 'soft':
-        y = Math.sign(x) * (1 - Math.exp(-Math.abs(x) * amount));
+      case 'soft': y = (Math.PI + Math.atan(Math.PI * x * amount)) / (Math.PI + Math.atan(Math.PI * amount)); break;
+      case 'hard': y = Math.min(0.8, Math.max(-0.8, x * amount)) / amount; break;
+      case 'fuzz': y = Math.sin(x * Math.PI * amount) * 0.8; break;
+      case 'overdrive': 
+        const k = 2 * amount / (1 - amount);
+        y = (1 + k) * x / (1 + k * Math.abs(x));
         break;
-      case 'hard':
-        y = Math.min(0.7, Math.max(-0.7, x * amount));
-        break;
-      case 'fuzz':
-        y = Math.sin(x * 10 * amount) / 2;
-        break;
-      case 'overdrive':
-        y = Math.atan(x * 3 * amount);
-        break;
-      default:
-        y = x;
+      default: y = x;
     }
     
     curve[i] = y;
@@ -103,7 +94,7 @@ function makeDistortionCurve(amount, type) {
   return curve;
 }
 
-// Visualizador
+/* ========== VISUALIZADOR ========== */
 function initVisualizer() {
   canvasCtx = visualizer.getContext('2d');
   visualizer.width = visualizer.offsetWidth;
@@ -131,48 +122,36 @@ function drawVisualizer() {
     const v = dataArray[i] / 128.0;
     const y = v * visualizer.height / 2;
     
-    if (i === 0) {
-      canvasCtx.moveTo(x, y);
-    } else {
-      canvasCtx.lineTo(x, y);
-    }
+    if (i === 0) canvasCtx.moveTo(x, y);
+    else canvasCtx.lineTo(x, y);
     
     x += sliceWidth;
   }
   
   canvasCtx.lineTo(visualizer.width, visualizer.height / 2);
   canvasCtx.stroke();
-  
   animationId = requestAnimationFrame(drawVisualizer);
 }
 
-// Grabación de audio
+/* ========== GRABACIÓN ========== */
 async function startRecording() {
   try {
-    if (!audioContext) {
-      const success = await initAudioContext();
-      if (!success) throw new Error("No se pudo inicializar el audio");
-    }
+    if (!audioContext) await initAudioContext();
     
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const source = audioContext.createMediaStreamSource(mediaStream);
     source.connect(inputGainNode);
     
-    // Configurar grabador con audio procesado
     const audioDest = audioContext.createMediaStreamDestination();
     outputGainNode.connect(audioDest);
     
     mediaRecorder = new MediaRecorder(audioDest.stream);
     audioChunks = [];
     
-    mediaRecorder.ondataavailable = event => {
-      audioChunks.push(event.data);
-    };
-    
+    mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
     mediaRecorder.onstop = () => {
       const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      audioPlayback.src = audioUrl;
+      audioPlayback.src = URL.createObjectURL(audioBlob);
       audioPlayback.style.display = 'block';
       cancelAnimationFrame(animationId);
     };
@@ -186,7 +165,6 @@ async function startRecording() {
     stopBtn.disabled = false;
     recordingStatus.innerHTML = '<span class="material-icons">mic</span><span>Grabando...</span>';
     recordingStatus.classList.add('recording');
-    
   } catch (error) {
     console.error('Error al iniciar grabación:', error);
     recordingStatus.innerHTML = `<span class="material-icons">error</span><span>Error: ${error.message}</span>`;
@@ -205,7 +183,111 @@ function stopRecording() {
   }
 }
 
-// Configuración de knobs
+/* ========== CONFIGURACIONES GUARDADAS ========== */
+function renderConfigList() {
+  const configList = document.getElementById('configList');
+  if (!configList) return;
+  
+  configList.innerHTML = savedConfigurations.map((config, index) => `
+    <div class="config-item">
+      <div class="config-info">
+        <div class="config-name">${config.name}</div>
+        <div class="config-date">${config.date}</div>
+      </div>
+      <div class="config-actions">
+        <button class="config-btn load-btn" data-index="${index}">Cargar</button>
+        <button class="config-btn delete-btn" data-index="${index}">Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+  
+  document.querySelectorAll('.load-btn').forEach(btn => {
+    btn.addEventListener('click', () => loadConfig(parseInt(btn.dataset.index)));
+  });
+  
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteConfig(parseInt(btn.dataset.index)));
+  });
+}
+
+function loadConfig(index) {
+  if (index >= 0 && index < savedConfigurations.length) {
+    const config = savedConfigurations[index].settings;
+    currentConfig = {...config};
+    
+    setKnobValue('slider1', config.gain);
+    setKnobValue('slider2', config.drive);
+    setKnobValue('slider3', config.tone);
+    setKnobValue('slider4', config.output);
+    setKnobValue('stopKnob', config.distortionType);
+    
+    applyCurrentConfig();
+    alert(`Configuración "${savedConfigurations[index].name}" cargada`);
+  }
+}
+
+function deleteConfig(index) {
+  if (index >= 0 && index < savedConfigurations.length && confirm(`¿Eliminar "${savedConfigurations[index].name}"?`)) {
+    savedConfigurations.splice(index, 1);
+    localStorage.setItem('audioDistortionConfigs', JSON.stringify(savedConfigurations));
+    renderConfigList();
+  }
+}
+
+function saveCurrentConfig() {
+  const configName = prompt("Nombre para esta configuración:");
+  if (configName) {
+    savedConfigurations.unshift({
+      name: configName,
+      date: new Date().toLocaleString(),
+      settings: {...currentConfig}
+    });
+    localStorage.setItem('audioDistortionConfigs', JSON.stringify(savedConfigurations));
+    renderConfigList();
+    alert(`"${configName}" guardada`);
+  }
+}
+
+function resetToDefault() {
+  if (confirm("¿Restablecer valores predeterminados?")) {
+    currentConfig = { gain: 50, drive: 50, tone: 50, output: 50, distortionType: 0 };
+    setKnobValue('slider1', 50);
+    setKnobValue('slider2', 50);
+    setKnobValue('slider3', 50);
+    setKnobValue('slider4', 50);
+    setKnobValue('stopKnob', 0);
+    applyCurrentConfig();
+  }
+}
+
+function applyCurrentConfig() {
+  if (inputGainNode) inputGainNode.gain.value = currentConfig.gain / 100 * 2;
+  if (outputGainNode) outputGainNode.gain.value = currentConfig.output / 100;
+  if (toneFilter) toneFilter.frequency.value = 200 + (currentConfig.tone / 100 * 4800);
+  currentDistortionType = currentConfig.distortionType;
+  updateDistortion();
+}
+
+/* ========== FUNCIONES DE KNOBS ========== */
+function setKnobValue(knobId, value) {
+  const knobElement = document.getElementById(knobId);
+  if (!knobElement) return;
+  
+  const rotationAngle = (value / 100) * 270;
+  const pointer = knobElement.querySelector('.pointer');
+  const circle = knobElement.querySelector('.dynamic-circle');
+  const text = knobElement.querySelector('.text');
+  
+  if (pointer) pointer.style.transform = `rotate(${rotationAngle - 45}deg)`;
+  if (circle) circle.style.strokeDashoffset = `${880 - 660 * (value / 100)}`;
+  
+  if (text) {
+    text.textContent = knobId === 'stopKnob' 
+      ? ['SOFT', 'HARD', 'FUZZ', 'OVERDRIVE'][value]
+      : value;
+  }
+}
+
 function setupContinuousKnob(id, callback) {
   const knobElement = document.getElementById(id);
   const knob = knobElement.querySelector('.knob');
@@ -231,25 +313,23 @@ function setupContinuousKnob(id, callback) {
       
       const angleRad = Math.atan2(deltaY, deltaX);
       let angleDeg = (angleRad * 180) / Math.PI;
-      
       let rotationAngle = (angleDeg - 135 + 360) % 360;
       
       if (rotationAngle <= 270) {
+        const progressValue = Math.round(rotationAngle / 270 * 100);
         pointer.style.transform = `rotate(${rotationAngle - 45}deg)`;
-        const progressPercent = rotationAngle / 270;
-        const progressValue = Math.round(progressPercent * 100);
-        
-        circle.style.strokeDashoffset = `${880 - 660 * progressPercent}`;
+        circle.style.strokeDashoffset = `${880 - 660 * (progressValue / 100)}`;
         text.textContent = progressValue;
         callback(progressValue);
+        currentConfig[id === 'slider1' ? 'gain' : 
+                     id === 'slider2' ? 'drive' : 
+                     id === 'slider3' ? 'tone' : 'output'] = progressValue;
       }
     }
   };
   
   document.addEventListener('mousemove', rotateKnob);
-  document.addEventListener('mouseup', () => {
-    isRotating = false;
-  });
+  document.addEventListener('mouseup', () => isRotating = false);
 }
 
 function setupStopKnob(id, callback) {
@@ -259,58 +339,50 @@ function setupStopKnob(id, callback) {
   const pointer = knobElement.querySelector('.pointer');
   const circle = knobElement.querySelector('.dynamic-circle');
   const text = knobElement.querySelector('.text');
+  const distortionNames = ['SOFT', 'HARD', 'FUZZ', 'OVERDRIVE'];
   
-  const stopPositions = [0, 90, 180, 270];
   let currentStopIndex = 0;
   
   function createMarkers() {
     markers.innerHTML = '';
-    const center = 150;
-    const radius = 120;
-    
-    stopPositions.forEach((angle, index) => {
+    [0, 90, 180, 270].forEach((angle, index) => {
       const angleRad = (angle + 135) * Math.PI / 180;
-      const x = center + radius * Math.cos(angleRad);
-      const y = center + radius * Math.sin(angleRad);
+      const x = 150 + 120 * Math.cos(angleRad);
+      const y = 150 + 120 * Math.sin(angleRad);
       
       const stop = document.createElement('div');
-      stop.className = 'knob-stop';
+      stop.className = `knob-stop ${index === currentStopIndex ? 'active' : ''}`;
       stop.style.left = `${x}px`;
       stop.style.top = `${y}px`;
-      if (index === currentStopIndex) stop.classList.add('active');
-      
       markers.appendChild(stop);
     });
   }
   
   function snapToNearestStop(angle) {
-    let minDiff = Infinity;
-    let nearestStopIndex = 0;
+    const positions = [0, 90, 180, 270];
+    const nearestIndex = positions.reduce((closest, pos, index) => {
+      const diff = Math.abs(pos - angle);
+      return diff < closest.diff ? { diff, index } : closest;
+    }, { diff: Infinity, index: 0 }).index;
     
-    stopPositions.forEach((stopAngle, index) => {
-      const diff = Math.abs(stopAngle - angle);
-      if (diff < minDiff) {
-        minDiff = diff;
-        nearestStopIndex = index;
-      }
-    });
-    
-    currentStopIndex = nearestStopIndex;
-    const snappedAngle = stopPositions[currentStopIndex];
+    currentStopIndex = nearestIndex;
+    const snappedAngle = positions[nearestIndex];
     
     pointer.style.transform = `rotate(${snappedAngle - 45}deg)`;
     circle.style.strokeDashoffset = `${880 - 660 * (snappedAngle / 270)}`;
-    text.textContent = currentStopIndex + 1;
+    text.textContent = distortionNames[nearestIndex];
     
-    document.querySelectorAll(`#${id} .knob-stop`).forEach((stop, index) => {
-      stop.classList.toggle('active', index === currentStopIndex);
+    markers.querySelectorAll('.knob-stop').forEach((stop, i) => {
+      stop.classList.toggle('active', i === nearestIndex);
     });
     
-    callback(currentStopIndex);
+    callback(nearestIndex);
+    currentConfig.distortionType = nearestIndex;
     return snappedAngle;
   }
   
   createMarkers();
+  text.textContent = distortionNames[currentStopIndex];
   
   knob.addEventListener('mousedown', (e) => {
     e.preventDefault();
@@ -327,60 +399,49 @@ function setupStopKnob(id, callback) {
         
         const angleRad = Math.atan2(deltaY, deltaX);
         let angleDeg = (angleRad * 180) / Math.PI;
-        
         let rotationAngle = (angleDeg - 135 + 360) % 360;
         
-        if (rotationAngle <= 270) {
-          snapToNearestStop(rotationAngle);
-        }
+        if (rotationAngle <= 270) snapToNearestStop(rotationAngle);
       }
     };
     
     document.addEventListener('mousemove', rotateKnob);
-    document.addEventListener('mouseup', () => {
-      isDragging = false;
-      document.removeEventListener('mousemove', rotateKnob);
-    }, { once: true });
+    document.addEventListener('mouseup', () => isDragging = false, { once: true });
   });
 }
 
 function setupKnobs() {
-  // Knob 1 - Ganancia de entrada (0-2)
   setupContinuousKnob('slider1', value => {
     if (inputGainNode) inputGainNode.gain.value = value / 100 * 2;
   });
   
-  // Knob 2 - Drive de distorsión (1-10)
-  setupContinuousKnob('slider2', () => {
-    updateDistortion();
-  });
+  setupContinuousKnob('slider2', () => updateDistortion());
   
-  // Knob 3 - Tono (200Hz-5kHz)
   setupContinuousKnob('slider3', value => {
     if (toneFilter) toneFilter.frequency.value = 200 + (value / 100 * 4800);
   });
   
-  // Knob 4 - Salida (0-1)
   setupContinuousKnob('slider4', value => {
     if (outputGainNode) outputGainNode.gain.value = value / 100;
   });
   
-  // Knob de distorsión (0-3)
   setupStopKnob('stopKnob', position => {
     currentDistortionType = position;
     updateDistortion();
   });
 }
 
-// Inicialización
+/* ========== INICIALIZACIÓN ========== */
 document.addEventListener('DOMContentLoaded', () => {
   setupKnobs();
+  renderConfigList();
   
+  document.getElementById('resetBtn').addEventListener('click', resetToDefault);
+  document.getElementById('saveBtn').addEventListener('click', saveCurrentConfig);
   recordBtn.addEventListener('click', startRecording);
   stopBtn.addEventListener('click', stopRecording);
 });
 
-// Limpieza
 window.addEventListener('beforeunload', () => {
   if (isRecording) stopRecording();
   if (audioContext) audioContext.close();
