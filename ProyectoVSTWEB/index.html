@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SweetDrive - Control Panel</title>
+    <!-- Google Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp|Material+Icons+Two+Tone" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="overlay"></div>
+    
+    <header>
+        <h1>SweetDrive Control Panel</h1>
+    </header>
+    
+    <main>
+        <div class="knobs-container">
+            <!-- Knob 1-->
+            <div class="knob-wrapper">
+                <div class="center">
+                    <div class="slider" id="slider1">
+                        <div class="knob">
+                            <div class="rotator">
+                                <div class="text">0</div>
+                            </div>
+                            <div class="pointer">
+                                <span class="material-icons"> play_arrow </span>
+                            </div>
+                        </div>
+                        <svg class="progress-bar" width="300" height="300">
+                            <circle class="progress-circle" cx="150" cy="150" r="140"></circle>
+                            <circle class="progress-circle dynamic-circle" cx="150" cy="150" r="140"
+                                style="stroke: url(#gradient1); stroke-width: 16px; stroke-linecap: round;"></circle>
+                            <defs>
+                                <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color: #ff0000" />
+                                    <stop offset="50%" style="stop-color: #ff9900" />
+                                    <stop offset="100%" style="stop-color: #33cc33" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+                <div class="knob-name">GAIN</div>
+            </div>
+            
+            <!-- Knob 2 -->
+            <div class="knob-wrapper">
+                <div class="center">
+                    <div class="slider" id="slider2">
+                        <div class="knob">
+                            <div class="rotator">
+                                <div class="text">0</div>
+                            </div>
+                            <div class="pointer">
+                                <span class="material-icons"> play_arrow </span>
+                            </div>
+                        </div>
+                        <svg class="progress-bar" width="300" height="300">
+                            <circle class="progress-circle" cx="150" cy="150" r="140"></circle>
+                            <circle class="progress-circle dynamic-circle" cx="150" cy="150" r="140"
+                                style="stroke: url(#gradient2); stroke-width: 16px; stroke-linecap: round;"></circle>
+                            <defs>
+                                <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color: #0066ff" />
+                                    <stop offset="50%" style="stop-color: #6600cc" />
+                                    <stop offset="100%" style="stop-color: #cc00ff" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+                <div class="knob-name">DRIVE</div>
+            </div>
+            
+            <!-- Knob 3 -->
+            <div class="knob-wrapper">
+                <div class="center">
+                    <div class="slider" id="slider3">
+                        <div class="knob">
+                            <div class="rotator">
+                                <div class="text">0</div>
+                            </div>
+                            <div class="pointer">
+                                <span class="material-icons"> play_arrow </span>
+                            </div>
+                        </div>
+                        <svg class="progress-bar" width="300" height="300">
+                            <circle class="progress-circle" cx="150" cy="150" r="140"></circle>
+                            <circle class="progress-circle dynamic-circle" cx="150" cy="150" r="140"
+                                style="stroke: url(#gradient3); stroke-width: 16px; stroke-linecap: round;"></circle>
+                            <defs>
+                                <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color: #00cc66" />
+                                    <stop offset="50%" style="stop-color: #66ff33" />
+                                    <stop offset="100%" style="stop-color: #ffff00" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+                <div class="knob-name">TONE</div>
+            </div>
+            
+            <!-- Knob 4 -->
+            <div class="knob-wrapper">
+                <div class="center">
+                    <div class="slider" id="slider4">
+                        <div class="knob">
+                            <div class="rotator">
+                                <div class="text">0</div>
+                            </div>
+                            <div class="pointer">
+                                <span class="material-icons"> play_arrow </span>
+                            </div>
+                        </div>
+                        <svg class="progress-bar" width="300" height="300">
+                            <circle class="progress-circle" cx="150" cy="150" r="140"></circle>
+                            <circle class="progress-circle dynamic-circle" cx="150" cy="150" r="140"
+                                style="stroke: url(#gradient4); stroke-width: 16px; stroke-linecap: round;"></circle>
+                            <defs>
+                                <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color: #ff3300" />
+                                    <stop offset="50%" style="stop-color: #ff0066" />
+                                    <stop offset="100%" style="stop-color: #cc00cc" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+                <div class="knob-name">OUTPUT</div>
+            </div>
+            
+            <!-- Knob 5 - Con 4 topes -->
+            <div class="knob-wrapper stop-knob">
+                <div class="center">
+                    <div class="slider knob-with-stops" id="stopKnob">
+                        <div class="knob-stop-markers" id="stopMarkers"></div>
+                        <div class="knob">
+                            <div class="rotator">
+                                <div class="text">0</div>
+                            </div>
+                            <div class="pointer">
+                                <span class="material-icons"> play_arrow </span>
+                            </div>
+                        </div>
+                        <svg class="progress-bar" width="300" height="300">
+                            <circle class="progress-circle" cx="150" cy="150" r="140"></circle>
+                            <circle class="progress-circle dynamic-circle" cx="150" cy="150" r="140"
+                                style="stroke: url(#gradient5); stroke-width: 16px; stroke-linecap: round;"></circle>
+                            <defs>
+                                <linearGradient id="gradient5" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color: #9b59b6" />
+                                    <stop offset="100%" style="stop-color: #3498db" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+                <div class="knob-name">GEARS</div>
+            </div>
+        </div>
+        
+        <!-- Sección de grabación de audio -->
+        <section class="audio-section">
+            <h2>Grabación de Audio</h2>
+            <div class="audio-controls">
+                <button id="recordBtn" class="record-btn">
+                    <span class="material-icons">mic</span> Iniciar Grabación
+                </button>
+                <button id="stopBtn" class="stop-btn" disabled>
+                    <span class="material-icons">stop</span> Detener
+                </button>
+                <div id="recordingStatus" class="recording-status">
+                    <span class="material-icons">mic_off</span>
+                    <span>Listo para grabar</span>
+                </div>
+                <audio id="audioPlayback" controls style="display: none;"></audio>
+            </div>
+            <div class="audio-visualizer">
+                <canvas id="visualizer" width="300" height="100"></canvas>
+            </div>
+        </section>
+        
+        <div class="controls">
+            <button id="saveBtn">Guardar Configuración</button>
+            <button id="resetBtn">Restablecer Valores</button>
+            
+        </div>
+
+        <section class="saved-configs">
+        <h2>Configuraciones Guardadas</h2>
+        <div id="configList" class="config-list">
+        </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2023 SweetDrive - Todos los derechos reservados</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
